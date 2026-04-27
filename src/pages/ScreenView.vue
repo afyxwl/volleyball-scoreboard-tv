@@ -204,10 +204,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .screen {
-  height: 100vh;
   width: 100vw;
-  box-sizing: border-box; 
-  padding: 24px;
+  height: 100dvh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding: clamp(18px, 3vw, 48px);
   overflow: hidden;
   background:
     radial-gradient(circle at 25% 20%, rgba(34, 211, 238, 0.12), transparent 30%),
@@ -218,26 +219,38 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
 }
+
 .scoreboard {
   width: 100%;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden; 
+  max-width: 1600px;
+  height: min(72vh, 680px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px minmax(0, 1fr); 
-  gap: 28px; /* було 42 */
+  grid-template-columns: minmax(320px, 1fr) clamp(220px, 18vw, 320px) minmax(320px, 1fr);
+  gap: clamp(22px, 3vw, 48px);
   align-items: center;
+  justify-content: center;
+  overflow: visible;
 }
+
 .team,
 .center-info {
   background: rgba(3, 7, 18, 0.92);
-  min-height: 0; 
-  height: 100%;
-  max-height: 100%;
-  padding: 28px; /* було 42 */
+  border-radius: 34px;
+  padding: clamp(24px, 3vw, 42px);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
+}
+
+.team {
+  height: clamp(360px, 56vh, 560px);
+}
+
+.center-info {
+  height: clamp(220px, 32vh, 360px);
+  border: 2px solid rgba(148, 163, 184, 0.3);
 }
 
 .left-team {
@@ -250,27 +263,24 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 38px rgba(251, 113, 133, 0.18);
 }
 
-.team {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
 .team-label {
-  font-size: 22px;
+  font-size: clamp(16px, 1.4vw, 22px);
   letter-spacing: 0.2em;
   color: #94a3b8;
   margin-bottom: 10px;
 }
 
 .team-name {
-  font-size: clamp(32px, 4vw, 72px); 
+  font-size: clamp(42px, 5vw, 82px);
   font-weight: 1000;
   text-transform: uppercase;
   text-align: center;
   line-height: 1;
-  margin-bottom: 28px;
+  margin-bottom: clamp(18px, 2.4vw, 28px);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .left-team .team-name,
@@ -286,40 +296,31 @@ onBeforeUnmount(() => {
 }
 
 .team-score {
-  font-size: clamp(100px, 12vw, 200px);
+  font-size: clamp(130px, 14vw, 250px);
   font-weight: 1000;
   line-height: 0.85;
   letter-spacing: 4px;
 }
 
 .team-meta {
-  margin-top: 30px;
+  margin-top: clamp(18px, 2.5vw, 30px);
   display: flex;
   gap: 22px;
   flex-wrap: wrap;
   justify-content: center;
-  font-size: clamp(18px, 2vw, 26px);
+  font-size: clamp(18px, 1.8vw, 28px);
   font-weight: 700;
   color: #e2e8f0;
 }
 
-.center-info {
-  min-height: 320px;
-  border: 2px solid rgba(148, 163, 184, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
 .period {
-  font-size: clamp(28px, 3vw, 42px);
+  font-size: clamp(34px, 4vw, 56px);
   font-weight: 1000;
   color: #e2e8f0;
 }
 
 .clock {
-  font-size: clamp(48px, 5vw, 72px);
+  font-size: clamp(54px, 6vw, 92px);
   font-weight: 1000;
   line-height: 1;
   margin: 18px 0;
@@ -327,7 +328,7 @@ onBeforeUnmount(() => {
 }
 
 .status {
-  font-size: 30px;
+  font-size: clamp(22px, 2.2vw, 34px);
   color: #94a3b8;
   text-transform: uppercase;
 }
@@ -355,35 +356,5 @@ onBeforeUnmount(() => {
 
 .error {
   color: #fb7185;
-}
-
-html, body, #app {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-@media (max-width: 1100px) {
-  .screen {
-    padding: 24px;
-  }
-
-  .scoreboard {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .center-info {
-    order: -1;
-    min-height: auto;
-  }
-
-  .team {
-    min-height: 300px;
-  }
-
-  .team-score {
-    font-size: 140px;
-  }
 }
 </style>
