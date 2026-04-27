@@ -204,8 +204,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .screen {
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
+  box-sizing: border-box; 
+  padding: 24px;
+  overflow: hidden;
   background:
     radial-gradient(circle at 25% 20%, rgba(34, 211, 238, 0.12), transparent 30%),
     radial-gradient(circle at 80% 25%, rgba(251, 113, 133, 0.12), transparent 30%),
@@ -214,26 +217,27 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
-  overflow: hidden;
 }
-
 .scoreboard {
   width: 100%;
-  max-width: 1700px;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden; 
   display: grid;
-  grid-template-columns: minmax(360px, 1fr) 300px minmax(360px, 1fr);
-  gap: 42px;
+  grid-template-columns: minmax(0, 1fr) 260px minmax(0, 1fr); 
+  gap: 28px; /* було 42 */
   align-items: center;
 }
-
 .team,
 .center-info {
   background: rgba(3, 7, 18, 0.92);
-  border-radius: 34px;
-  min-height: 420px;
-  padding: 42px;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.75);
+  min-height: 0; 
+  height: 100%;
+  max-height: 100%;
+  padding: 28px; /* було 42 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .left-team {
@@ -261,7 +265,7 @@ onBeforeUnmount(() => {
 }
 
 .team-name {
-  font-size: clamp(44px, 5vw, 86px);
+  font-size: clamp(32px, 4vw, 72px); 
   font-weight: 1000;
   text-transform: uppercase;
   text-align: center;
@@ -282,7 +286,7 @@ onBeforeUnmount(() => {
 }
 
 .team-score {
-  font-size: clamp(150px, 15vw, 280px);
+  font-size: clamp(100px, 12vw, 200px);
   font-weight: 1000;
   line-height: 0.85;
   letter-spacing: 4px;
@@ -294,7 +298,7 @@ onBeforeUnmount(() => {
   gap: 22px;
   flex-wrap: wrap;
   justify-content: center;
-  font-size: 28px;
+  font-size: clamp(18px, 2vw, 26px);
   font-weight: 700;
   color: #e2e8f0;
 }
@@ -309,13 +313,13 @@ onBeforeUnmount(() => {
 }
 
 .period {
-  font-size: 48px;
+  font-size: clamp(28px, 3vw, 42px);
   font-weight: 1000;
   color: #e2e8f0;
 }
 
 .clock {
-  font-size: 82px;
+  font-size: clamp(48px, 5vw, 72px);
   font-weight: 1000;
   line-height: 1;
   margin: 18px 0;
@@ -351,6 +355,12 @@ onBeforeUnmount(() => {
 
 .error {
   color: #fb7185;
+}
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 @media (max-width: 1100px) {
