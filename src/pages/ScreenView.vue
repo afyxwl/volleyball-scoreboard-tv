@@ -277,9 +277,8 @@ onBeforeUnmount(() => {
   line-height: 1;
   margin-bottom: clamp(18px, 2.4vw, 28px);
   max-width: 100%;
-  overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .left-team .team-name,
