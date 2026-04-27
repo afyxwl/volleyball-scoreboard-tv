@@ -1,0 +1,19 @@
+:root {
+  --bg: #05070d;
+  --card: #0b1220;
+  --blue: #22d3ee;
+  --red: #fb7185;
+  --text: #f8fafc;
+  --muted: #9ca3af;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+}
