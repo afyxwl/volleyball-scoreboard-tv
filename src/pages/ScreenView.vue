@@ -245,11 +245,11 @@ onBeforeUnmount(() => {
 }
 
 .team {
-  height: clamp(360px, 56vh, 560px);
+  height: clamp(420px, 56vh, 560px);
 }
 
 .center-info {
-  height: clamp(220px, 32vh, 360px);
+  height: clamp(260px, 40vh, 420px);
   border: 2px solid rgba(148, 163, 184, 0.3);
 }
 
@@ -257,7 +257,6 @@ onBeforeUnmount(() => {
   border: 3px solid #22d3ee;
   box-shadow: 0 0 38px rgba(34, 211, 238, 0.18);
 }
-
 .right-team {
   border: 3px solid #fb7185;
   box-shadow: 0 0 38px rgba(251, 113, 133, 0.18);
