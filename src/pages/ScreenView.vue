@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import { createSocket } from '../services/socket'
+import ScoreboardDisplay from '../components/ScoreboardDisplay.vue'
 
 const route = useRoute()
 const screenId = route.params.id
@@ -11,8 +12,8 @@ const loading = ref(true)
 const error = ref('')
 const noMatch = ref(false)
 const socket = createSocket()
-
-const scoreboard = ref({
+ 
+const scoreboard = ref(defaultScoreboard())
   team1: {
     name: 'КОМАНДА 1',
     score: 0,
@@ -36,7 +37,65 @@ const scoreboard = ref({
 
 const displayedClock = ref('00:00')
 let timerId: number | null = null
+const displayedShotClock = ref('24')
 
+let gameTimerId: number | null = null
+let shotTimerId: number | null = null
+
+function parseClock(value: string) {
+  const [mm, ss] = (value || '00:00').split(':').map(Number)
+  return (mm || 0) * 60 + (ss || 0)
+}
+
+
+function defaultScoreboard() {
+  return {
+    id: undefined,
+    screenId: Number(screenId),
+    sportType: 'volleyball',
+
+    team1: {
+      name: 'КОМАНДА 1',
+      score: 0,
+      fouls: 0,
+      timeoutsUsed: 0,
+    },
+
+    team2: {
+      name: 'КОМАНДА 2',
+      score: 0,
+      fouls: 0,
+      timeoutsUsed: 0,
+    },
+
+    currentSet: 1,
+    status: 'draft',
+    isActive: false,
+
+    clock: {
+      time: '00:00',
+      isRunning: false,
+    },
+
+    shotClock: {
+      seconds: 24,
+      isRunning: false,
+      defaultSeconds: 24,
+    },
+
+    theme: {
+      team1Color: '#67e8f9',
+      team2Color: '#fda4af',
+      fontFamily: 'system',
+      boardStyle: 'neon',
+    },
+
+    setScores: {
+      team1: [],
+      team2: [],
+    },
+  }
+}
 function parseClock(value: string) {
   const [mm, ss] = (value || '00:00').split(':').map(Number)
   return (mm || 0) * 60 + (ss || 0)
@@ -49,30 +108,88 @@ function formatClock(total: number) {
   return `${mm}:${ss}`
 }
 
-function stopTicker() {
-  if (timerId) {
-    clearInterval(timerId)
-    timerId = null
+function formatShotClock(total: number) {
+  return String(Math.max(0, Math.floor(total || 0))).padStart(2, '0')
+}
+
+function stopGameTicker() {
+  if (gameTimerId) {
+    clearInterval(gameTimerId)
+    gameTimerId = null
   }
 }
 
-function startTicker() {
-  stopTicker()
+function stopShotTicker() {
+  if (shotTimerId) {
+    clearInterval(shotTimerId)
+    shotTimerId = null
+  }
+}
+
+function startGameTicker() {
+  stopGameTicker()
 
   let seconds = parseClock(scoreboard.value.clock.time || '00:00')
   displayedClock.value = formatClock(seconds)
 
   if (scoreboard.value.status !== 'live') return
 
-  timerId = window.setInterval(() => {
-    seconds += 1
+  gameTimerId = window.setInterval(() => {
+    if (scoreboard.value.sportType === 'basketball') {
+      seconds = Math.max(0, seconds - 1)
+    } else {
+      seconds += 1
+    }
+
     displayedClock.value = formatClock(seconds)
+
+    if (seconds === 0 && scoreboard.value.sportType === 'basketball') {
+      stopGameTicker()
+    }
+  }, 1000)
+}
+function startShotTicker() {
+  stopShotTicker()
+
+  let seconds = Number(scoreboard.value.shotClock?.seconds ?? 24)
+  displayedShotClock.value = formatShotClock(seconds)
+
+  if (
+    scoreboard.value.sportType !== 'basketball' ||
+    scoreboard.value.status !== 'live' ||
+    !scoreboard.value.shotClock?.isRunning
+  ) {
+    return
+  }
+
+  shotTimerId = window.setInterval(() => {
+    seconds = Math.max(0, seconds - 1)
+    displayedShotClock.value = formatShotClock(seconds)
+
+    if (seconds === 0) {
+      stopShotTicker()
+    }
   }, 1000)
 }
 
+
 watch(
-  () => [scoreboard.value.clock.time, scoreboard.value.status],
-  () => startTicker(),
+  () => [
+    scoreboard.value.clock.time,
+    scoreboard.value.status,
+    scoreboard.value.sportType,
+  ],
+  () => startGameTicker(),
+  { immediate: true }
+)
+
+watch(
+  () => [
+    scoreboard.value.shotClock.seconds,
+    scoreboard.value.shotClock.isRunning,
+    scoreboard.value.status,
+  ],
+  () => startShotTicker(),
   { immediate: true }
 )
 
@@ -85,6 +202,7 @@ function mapStatus(status: string) {
 
 function applyScoreboard(payload: any) {
   const data = payload?.data ?? payload
+
   noMatch.value = false
 
   scoreboard.value = {
@@ -92,20 +210,74 @@ function applyScoreboard(payload: any) {
       name: data.team1?.name ?? scoreboard.value.team1.name,
       score: data.team1?.score ?? scoreboard.value.team1.score,
       fouls: data.team1?.fouls ?? scoreboard.value.team1.fouls,
-      timeoutsUsed: data.team1?.timeoutsUsed ?? scoreboard.value.team1.timeoutsUsed,
+      timeoutsUsed:
+        data.team1?.timeoutsUsed ?? scoreboard.value.team1.timeoutsUsed,
     },
+
     team2: {
       name: data.team2?.name ?? scoreboard.value.team2.name,
       score: data.team2?.score ?? scoreboard.value.team2.score,
       fouls: data.team2?.fouls ?? scoreboard.value.team2.fouls,
-      timeoutsUsed: data.team2?.timeoutsUsed ?? scoreboard.value.team2.timeoutsUsed,
+      timeoutsUsed:
+        data.team2?.timeoutsUsed ?? scoreboard.value.team2.timeoutsUsed,
     },
+
     currentSet: data.currentSet ?? scoreboard.value.currentSet,
+
     status: data.status ?? scoreboard.value.status,
+
     isActive: data.isActive ?? scoreboard.value.isActive,
+
+    sportType:
+      data.sportType ?? scoreboard.value.sportType,
+
     clock: {
       time: data.clock?.time ?? scoreboard.value.clock.time,
-      isRunning: data.clock?.isRunning ?? scoreboard.value.clock.isRunning,
+
+      isRunning:
+        data.clock?.isRunning ?? scoreboard.value.clock.isRunning,
+    },
+
+    shotClock: {
+      seconds:
+        data.shotClock?.seconds ??
+        scoreboard.value.shotClock.seconds,
+
+      isRunning:
+        data.shotClock?.isRunning ??
+        scoreboard.value.shotClock.isRunning,
+
+      defaultSeconds:
+        data.shotClock?.defaultSeconds ??
+        scoreboard.value.shotClock.defaultSeconds,
+    },
+
+    theme: {
+      team1Color:
+        data.theme?.team1Color ??
+        scoreboard.value.theme.team1Color,
+
+      team2Color:
+        data.theme?.team2Color ??
+        scoreboard.value.theme.team2Color,
+
+      fontFamily:
+        data.theme?.fontFamily ??
+        scoreboard.value.theme.fontFamily,
+
+      boardStyle:
+        data.theme?.boardStyle ??
+        scoreboard.value.theme.boardStyle,
+    },
+
+    setScores: {
+      team1: Array.isArray(data.setScores?.team1)
+        ? data.setScores.team1
+        : scoreboard.value.setScores.team1,
+
+      team2: Array.isArray(data.setScores?.team2)
+        ? data.setScores.team2
+        : scoreboard.value.setScores.team2,
     },
   }
 }
@@ -151,7 +323,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  stopTicker()
+  stopGameTicker()
+  stopShotTicker()
   socket.off('match:updated', handleUpdated)
   socket.off('match.updated', handleUpdated)
   socket.disconnect()
@@ -159,7 +332,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="screen">
+  <div class="screen-view">
     <div v-if="loading" class="message">Завантаження табло...</div>
 
     <div v-else-if="error" class="message error">
@@ -172,184 +345,56 @@ onBeforeUnmount(() => {
       <div class="empty-hint">Очікування запуску з адмінки...</div>
     </div>
 
-    <div v-else class="scoreboard">
-      <section class="team left-team">
-        <div class="team-label">ГОСПОДАРІ</div>
-        <div class="team-name">{{ scoreboard.team1.name }}</div>
-        <div class="team-score">{{ scoreboard.team1.score }}</div>
-        <div class="team-meta">
-          <span>Таймаути: {{ scoreboard.team1.timeoutsUsed }}</span>
-          <span>Фоли: {{ scoreboard.team1.fouls }}</span>
-        </div>
-      </section>
-
-      <section class="center-info">
-        <div class="period">СЕТ {{ scoreboard.currentSet }}</div>
-        <div class="clock">{{ displayedClock }}</div>
-        <div class="status">{{ mapStatus(scoreboard.status) }}</div>
-      </section>
-
-      <section class="team right-team">
-        <div class="team-label">ГОСТІ</div>
-        <div class="team-name">{{ scoreboard.team2.name }}</div>
-        <div class="team-score">{{ scoreboard.team2.score }}</div>
-        <div class="team-meta">
-          <span>Таймаути: {{ scoreboard.team2.timeoutsUsed }}</span>
-          <span>Фоли: {{ scoreboard.team2.fouls }}</span>
-        </div>
-      </section>
-    </div>
+    <ScoreboardDisplay
+      v-else
+      :scoreboard="scoreboard"
+      :displayed-clock="displayedClock"
+      :displayed-shot-clock="displayedShotClock"
+    />
   </div>
 </template>
 
 <style scoped>
-.screen {
+.screen-view {
   width: 100vw;
   height: 100dvh;
-  min-height: 100dvh;
-  box-sizing: border-box;
-  padding: clamp(18px, 3vw, 48px);
   overflow: hidden;
-  background:
-    radial-gradient(circle at 25% 20%, rgba(34, 211, 238, 0.12), transparent 30%),
-    radial-gradient(circle at 80% 25%, rgba(251, 113, 133, 0.12), transparent 30%),
-    #03050a;
+  background: #03050a;
   color: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.scoreboard {
-  width: 100%;
-  max-width: 1600px;
-  height: min(72vh, 680px);
-  display: grid;
-  grid-template-columns: minmax(320px, 1fr) clamp(220px, 18vw, 320px) minmax(320px, 1fr);
-  gap: clamp(22px, 3vw, 48px);
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-}
-
-.team,
-.center-info {
-  background: rgba(3, 7, 18, 0.92);
-  border-radius: 34px;
-  padding: clamp(24px, 3vw, 42px);
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.75);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.team {
-  height: clamp(420px, 56vh, 560px);
-}
-
-.center-info {
-  height: clamp(260px, 40vh, 420px);
-  border: 2px solid rgba(148, 163, 184, 0.3);
-}
-
-.left-team {
-  border: 3px solid #22d3ee;
-  box-shadow: 0 0 38px rgba(34, 211, 238, 0.18);
-}
-.right-team {
-  border: 3px solid #fb7185;
-  box-shadow: 0 0 38px rgba(251, 113, 133, 0.18);
-}
-
-.team-label {
-  font-size: clamp(16px, 1.4vw, 22px);
-  letter-spacing: 0.2em;
-  color: #94a3b8;
-  margin-bottom: 10px;
-}
-
-.team-name {
-  font-size: clamp(42px, 5vw, 82px);
-  font-weight: 1000;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1;
-  margin-bottom: clamp(18px, 2.4vw, 28px);
-  max-width: 100%;
-  text-overflow: ellipsis;
-  white-space: normal;
-}
-
-.left-team .team-name,
-.left-team .team-score {
-  color: #67e8f9;
-  text-shadow: 0 0 22px rgba(34, 211, 238, 0.45);
-}
-
-.right-team .team-name,
-.right-team .team-score {
-  color: #fda4af;
-  text-shadow: 0 0 22px rgba(251, 113, 133, 0.45);
-}
-
-.team-score {
-  font-size: clamp(130px, 14vw, 250px);
-  font-weight: 1000;
-  line-height: 0.85;
-  letter-spacing: 4px;
-}
-
-.team-meta {
-  margin-top: clamp(18px, 2.5vw, 30px);
-  display: flex;
-  gap: 22px;
-  flex-wrap: wrap;
-  justify-content: center;
-  font-size: clamp(18px, 1.8vw, 28px);
-  font-weight: 700;
-  color: #e2e8f0;
-}
-
-.period {
-  font-size: clamp(34px, 4vw, 56px);
-  font-weight: 1000;
-  color: #e2e8f0;
-}
-
-.clock {
-  font-size: clamp(54px, 6vw, 92px);
-  font-weight: 1000;
-  line-height: 1;
-  margin: 18px 0;
-  letter-spacing: 2px;
-}
-
-.status {
-  font-size: clamp(22px, 2.2vw, 34px);
-  color: #94a3b8;
-  text-transform: uppercase;
 }
 
 .message,
 .empty-state {
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  background: #03050a;
+  color: #f8fafc;
+}
+
+.message {
+  font-size: clamp(26px, 4vw, 58px);
+  font-weight: 900;
 }
 
 .empty-title {
-  font-size: 58px;
+  font-size: clamp(34px, 5vw, 70px);
   font-weight: 1000;
 }
 
 .empty-subtitle {
-  font-size: 34px;
-  margin-top: 10px;
+  font-size: clamp(24px, 3vw, 42px);
+  margin-top: 12px;
 }
 
 .empty-hint {
-  font-size: 22px;
+  font-size: clamp(18px, 2vw, 28px);
   color: #94a3b8;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .error {
