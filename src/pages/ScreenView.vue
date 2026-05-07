@@ -12,41 +12,6 @@ const loading = ref(true)
 const error = ref('')
 const noMatch = ref(false)
 const socket = createSocket()
- 
-const scoreboard = ref(defaultScoreboard())
-  team1: {
-    name: 'КОМАНДА 1',
-    score: 0,
-    fouls: 0,
-    timeoutsUsed: 0,
-  },
-  team2: {
-    name: 'КОМАНДА 2',
-    score: 0,
-    fouls: 0,
-    timeoutsUsed: 0,
-  },
-  currentSet: 1,
-  status: 'draft',
-  isActive: false,
-  clock: {
-    time: '00:00',
-    isRunning: false,
-  },
-})
-
-const displayedClock = ref('00:00')
-let timerId: number | null = null
-const displayedShotClock = ref('24')
-
-let gameTimerId: number | null = null
-let shotTimerId: number | null = null
-
-function parseClock(value: string) {
-  const [mm, ss] = (value || '00:00').split(':').map(Number)
-  return (mm || 0) * 60 + (ss || 0)
-}
-
 
 function defaultScoreboard() {
   return {
@@ -96,10 +61,19 @@ function defaultScoreboard() {
     },
   }
 }
+
+const scoreboard = ref(defaultScoreboard())
+const displayedClock = ref('00:00')
+const displayedShotClock = ref('24')
+
+let gameTimerId: number | null = null
+let shotTimerId: number | null = null
+
 function parseClock(value: string) {
   const [mm, ss] = (value || '00:00').split(':').map(Number)
   return (mm || 0) * 60 + (ss || 0)
 }
+
 
 function formatClock(total: number) {
   const safe = Math.max(0, total)
@@ -193,19 +167,17 @@ watch(
   { immediate: true }
 )
 
-function mapStatus(status: string) {
-  if (status === 'live') return 'Триває'
-  if (status === 'paused') return 'Пауза'
-  if (status === 'finished') return 'Завершено'
-  return 'Чернетка'
-}
-
 function applyScoreboard(payload: any) {
   const data = payload?.data ?? payload
 
   noMatch.value = false
 
   scoreboard.value = {
+     id: data.id ?? scoreboard.value.id,
+
+  screenId:
+    data.screenId ?? scoreboard.value.screenId,
+
     team1: {
       name: data.team1?.name ?? scoreboard.value.team1.name,
       score: data.team1?.score ?? scoreboard.value.team1.score,
