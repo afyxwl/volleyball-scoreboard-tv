@@ -68,15 +68,15 @@ function setWins(team: 1 | 2) {
 </script>
 <template>
   <div
-    class="screen-display"
+    class="scoreboard-root"
     :class="[
       preview ? 'is-preview' : '',
       sportType === 'basketball' ? 'basketball-mode' : 'volleyball-mode',
     ]"
     :style="themeVars"
   >
-    <div v-if="sportType === 'basketball'" class="basketball-board">
-      <section class="team-card left-team">
+    <div v-if="sportType === 'basketball'" class="scoreboard">
+      <section class="team team-left">
         <div class="team-label">ГОСПОДАРІ</div>
         <div class="team-name">{{ scoreboard.team1.name }}</div>
         <div class="team-score">{{ scoreboard.team1.score }}</div>
@@ -87,11 +87,11 @@ function setWins(team: 1 | 2) {
         </div>
       </section>
 
-      <section class="center-card basketball-center">
+      <section class="center">
         <div class="period">ПЕРІОД {{ scoreboard.currentSet }}</div>
         <div class="clock">{{ displayedClock }}</div>
 
-        <div class="shot-clock-box">
+        <div class="shot-clock">
           <span>АТАКА</span>
           <strong>{{ displayedShotClock }}</strong>
         </div>
@@ -99,7 +99,7 @@ function setWins(team: 1 | 2) {
         <div class="status">{{ mapStatus(scoreboard.status) }}</div>
       </section>
 
-      <section class="team-card right-team">
+      <section class="team team-right">
         <div class="team-label">ГОСТІ</div>
         <div class="team-name">{{ scoreboard.team2.name }}</div>
         <div class="team-score">{{ scoreboard.team2.score }}</div>
@@ -111,8 +111,8 @@ function setWins(team: 1 | 2) {
       </section>
     </div>
 
-    <div v-else class="volleyball-board">
-      <section class="volley-team left-team">
+    <div v-else class="scoreboard">
+      <section class="team team-left">
         <div class="team-label">КОМАНДА 1</div>
         <div class="team-name">{{ scoreboard.team1.name }}</div>
 
@@ -120,7 +120,7 @@ function setWins(team: 1 | 2) {
         <div class="match-score">{{ setWins(1) }}</div>
 
         <div class="set-history">
-          <div v-for="index in 4" :key="`t1-${index}`" class="set-cell">
+          <div v-for="index in 4" :key="`t1-${index}`" class="set-box">
             <span>Партія {{ index }}</span>
             <strong>{{ setScore(1, index - 1) }}</strong>
           </div>
@@ -129,7 +129,7 @@ function setWins(team: 1 | 2) {
         <div class="volley-meta">Таймаути: {{ scoreboard.team1.timeoutsUsed }}</div>
       </section>
 
-      <section class="center-card current-set-card">
+      <section class="center">
         <div class="period">СЕТ {{ scoreboard.currentSet }}</div>
 
         <div class="current-score">
@@ -143,7 +143,7 @@ function setWins(team: 1 | 2) {
         <div class="status">{{ mapStatus(scoreboard.status) }}</div>
       </section>
 
-      <section class="volley-team right-team">
+      <section class="team team-right">
         <div class="team-label">КОМАНДА 2</div>
         <div class="team-name">{{ scoreboard.team2.name }}</div>
 
