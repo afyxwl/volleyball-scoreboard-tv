@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../services/api'
 import { createSocket } from '../services/socket'
@@ -38,9 +38,10 @@ function defaultScoreboard() {
     isActive: false,
 
     clock: {
-      time: '00:00',
-      isRunning: false,
-    },
+    time: '00:00',
+    isRunning: false,
+    startedAt: null as string | null,
+  },
 
     shotClock: {
       seconds: 24,
@@ -68,7 +69,7 @@ const displayedShotClock = ref('24')
 
 let gameTimerId: number | null = null
 let shotTimerId: number | null = null
-
+let serverOffsetMs = 0
 function parseClock(value: string) {
   const [mm, ss] = (value || '00:00').split(':').map(Number)
   return (mm || 0) * 60 + (ss || 0)
@@ -103,25 +104,56 @@ function stopShotTicker() {
 function startGameTicker() {
   stopGameTicker()
 
-  let seconds = parseClock(scoreboard.value.clock.time || '00:00')
-  displayedClock.value = formatClock(seconds)
+  const update = () => {
+    const clock = scoreboard.value.clock
 
-  if (scoreboard.value.status !== 'live') return
+    const base = parseClock(
+      clock.time || '00:00'
+    )
 
-  gameTimerId = window.setInterval(() => {
+    if (
+      !clock.isRunning ||
+      !clock.startedAt
+    ) {
+      displayedClock.value = formatClock(base)
+      return
+    }
+
+    const now =
+      Date.now() + serverOffsetMs
+
+    const started =
+      new Date(clock.startedAt).getTime()
+
+    const elapsed = Math.max(
+      0,
+      Math.floor((now - started) / 1000)
+    )
+
     if (scoreboard.value.sportType === 'basketball') {
-      seconds = Math.max(0, seconds - 1)
+      displayedClock.value = formatClock(
+        Math.max(0, base - elapsed)
+      )
     } else {
-      seconds += 1
+      displayedClock.value = formatClock(
+        base + elapsed
+      )
     }
+  }
 
-    displayedClock.value = formatClock(seconds)
+  update()
 
-    if (seconds === 0 && scoreboard.value.sportType === 'basketball') {
-      stopGameTicker()
-    }
-  }, 1000)
+  if (
+    scoreboard.value.clock.isRunning &&
+    scoreboard.value.clock.startedAt
+  ) {
+    gameTimerId = window.setInterval(
+      update,
+      250
+    )
+  }
 }
+
 function startShotTicker() {
   stopShotTicker()
 
@@ -146,29 +178,14 @@ function startShotTicker() {
   }, 1000)
 }
 
-
-watch(
-  () => [
-    scoreboard.value.clock.time,
-    scoreboard.value.status,
-    scoreboard.value.sportType,
-  ],
-  () => startGameTicker(),
-  { immediate: true }
-)
-
-watch(
-  () => [
-    scoreboard.value.shotClock.seconds,
-    scoreboard.value.shotClock.isRunning,
-    scoreboard.value.status,
-  ],
-  () => startShotTicker(),
-  { immediate: true }
-)
-
 function applyScoreboard(payload: any) {
   const data = payload?.data ?? payload
+
+  if (data?.serverNow) {
+    serverOffsetMs =
+      new Date(data.serverNow).getTime() -
+      Date.now()
+  }
 
   noMatch.value = false
 
@@ -204,12 +221,18 @@ function applyScoreboard(payload: any) {
       data.sportType ?? scoreboard.value.sportType,
 
     clock: {
-      time: data.clock?.time ?? scoreboard.value.clock.time,
+    time:
+      data.clock?.time ??
+      scoreboard.value.clock.time,
 
-      isRunning:
-        data.clock?.isRunning ?? scoreboard.value.clock.isRunning,
-    },
+    isRunning:
+      data.clock?.isRunning ??
+      scoreboard.value.clock.isRunning,
 
+    startedAt:
+      data.clock?.startedAt ??
+      scoreboard.value.clock.startedAt,
+  },
     shotClock: {
       seconds:
         data.shotClock?.seconds ??
@@ -252,6 +275,8 @@ function applyScoreboard(payload: any) {
         : scoreboard.value.setScores.team2,
     },
   }
+  startGameTicker()
+  startShotTicker()
 }
 
 async function loadCurrentState() {
