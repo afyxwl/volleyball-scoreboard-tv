@@ -43,11 +43,12 @@ function defaultScoreboard() {
     startedAt: null as string | null,
   },
 
-    shotClock: {
-      seconds: 24,
-      isRunning: false,
-      defaultSeconds: 24,
-    },
+shotClock: {
+  seconds: 24,
+  isRunning: false,
+  defaultSeconds: 24,
+  startedAt: null as string | null,
+},
 
     theme: {
       team1Color: '#67e8f9',
@@ -67,15 +68,60 @@ const scoreboard = ref(defaultScoreboard())
 const displayedClock = ref('00:00')
 const displayedShotClock = ref('24')
 
-let gameTimerId: number | null = null
-let shotTimerId: number | null = null
+let tickerId: number | null = null
 let serverOffsetMs = 0
 function parseClock(value: string) {
   const [mm, ss] = (value || '00:00').split(':').map(Number)
   return (mm || 0) * 60 + (ss || 0)
 }
 
+function stopTicker() {
+  if (tickerId !== null) {
+    clearInterval(tickerId)
+    tickerId = null
+  }
+}
+function updateDisplayedGameClock() {
+  const clock = scoreboard.value.clock
 
+  const base =
+    parseClock(clock.time || '00:00')
+
+  if (
+    !clock.isRunning ||
+    !clock.startedAt
+  ) {
+    displayedClock.value =
+      formatClock(base)
+
+    return
+  }
+
+  const now =
+    Date.now() + serverOffsetMs
+
+  const started =
+    new Date(clock.startedAt).getTime()
+
+  const elapsed =
+    Math.max(
+      0,
+      Math.floor((now - started) / 1000)
+    )
+
+  if (
+    scoreboard.value.sportType ===
+    'basketball'
+  ) {
+    displayedClock.value =
+      formatClock(
+        Math.max(0, base - elapsed)
+      )
+  } else {
+    displayedClock.value =
+      formatClock(base + elapsed)
+  }
+}
 function formatClock(total: number) {
   const safe = Math.max(0, total)
   const mm = String(Math.floor(safe / 60)).padStart(2, '0')
@@ -87,97 +133,64 @@ function formatShotClock(total: number) {
   return String(Math.max(0, Math.floor(total || 0))).padStart(2, '0')
 }
 
-function stopGameTicker() {
-  if (gameTimerId) {
-    clearInterval(gameTimerId)
-    gameTimerId = null
+function updateDisplayedShotClock() {
+  const shot = scoreboard.value.shotClock
+
+  const base =
+    Number(shot.seconds ?? 24)
+
+  if (
+    !shot.isRunning ||
+    !shot.startedAt
+  ) {
+    displayedShotClock.value =
+      formatShotClock(base)
+
+    return
   }
-}
 
-function stopShotTicker() {
-  if (shotTimerId) {
-    clearInterval(shotTimerId)
-    shotTimerId = null
-  }
-}
+  const now =
+    Date.now() + serverOffsetMs
 
-function startGameTicker() {
-  stopGameTicker()
+  const started =
+    new Date(shot.startedAt).getTime()
 
-  const update = () => {
-    const clock = scoreboard.value.clock
-
-    const base = parseClock(
-      clock.time || '00:00'
-    )
-
-    if (
-      !clock.isRunning ||
-      !clock.startedAt
-    ) {
-      displayedClock.value = formatClock(base)
-      return
-    }
-
-    const now =
-      Date.now() + serverOffsetMs
-
-    const started =
-      new Date(clock.startedAt).getTime()
-
-    const elapsed = Math.max(
+  const elapsed =
+    Math.max(
       0,
       Math.floor((now - started) / 1000)
     )
 
-    if (scoreboard.value.sportType === 'basketball') {
-      displayedClock.value = formatClock(
-        Math.max(0, base - elapsed)
-      )
-    } else {
-      displayedClock.value = formatClock(
-        base + elapsed
-      )
-    }
+  displayedShotClock.value =
+    formatShotClock(
+      Math.max(0, base - elapsed)
+    )
+}
+function startTicker() {
+  stopTicker()
+
+  const update = () => {
+    updateDisplayedGameClock()
+    updateDisplayedShotClock()
   }
 
   update()
 
-  if (
+  const gameRunning =
     scoreboard.value.clock.isRunning &&
     scoreboard.value.clock.startedAt
-  ) {
-    gameTimerId = window.setInterval(
+
+  const shotRunning =
+    scoreboard.value.shotClock.isRunning &&
+    scoreboard.value.shotClock.startedAt
+
+  if (gameRunning || shotRunning) {
+    tickerId = window.setInterval(
       update,
-      250
+      100
     )
   }
 }
-
-function startShotTicker() {
-  stopShotTicker()
-
-  let seconds = Number(scoreboard.value.shotClock?.seconds ?? 24)
-  displayedShotClock.value = formatShotClock(seconds)
-
-  if (
-    scoreboard.value.sportType !== 'basketball' ||
-    scoreboard.value.status !== 'live' ||
-    !scoreboard.value.shotClock?.isRunning
-  ) {
-    return
-  }
-
-  shotTimerId = window.setInterval(() => {
-    seconds = Math.max(0, seconds - 1)
-    displayedShotClock.value = formatShotClock(seconds)
-
-    if (seconds === 0) {
-      stopShotTicker()
-    }
-  }, 1000)
-}
-
 function applyScoreboard(payload: any) {
   const data = payload?.data ?? payload
 
@@ -233,19 +246,23 @@ function applyScoreboard(payload: any) {
       data.clock?.startedAt ??
       scoreboard.value.clock.startedAt,
   },
-    shotClock: {
-      seconds:
-        data.shotClock?.seconds ??
-        scoreboard.value.shotClock.seconds,
+  shotClock: {
+    seconds:
+      data.shotClock?.seconds ??
+      scoreboard.value.shotClock.seconds,
 
-      isRunning:
-        data.shotClock?.isRunning ??
-        scoreboard.value.shotClock.isRunning,
+    isRunning:
+      data.shotClock?.isRunning ??
+      scoreboard.value.shotClock.isRunning,
 
-      defaultSeconds:
-        data.shotClock?.defaultSeconds ??
-        scoreboard.value.shotClock.defaultSeconds,
-    },
+    defaultSeconds:
+      data.shotClock?.defaultSeconds ??
+      scoreboard.value.shotClock.defaultSeconds,
+
+    startedAt:
+      data.shotClock?.startedAt ??
+      scoreboard.value.shotClock.startedAt,
+  },
 
     theme: {
       team1Color:
@@ -275,8 +292,7 @@ function applyScoreboard(payload: any) {
         : scoreboard.value.setScores.team2,
     },
   }
-  startGameTicker()
-  startShotTicker()
+ startTicker()
 }
 
 async function loadCurrentState() {
@@ -320,8 +336,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  stopGameTicker()
-  stopShotTicker()
+  stopTicker()
   socket.off('match:updated', handleUpdated)
   socket.off('match.updated', handleUpdated)
   socket.disconnect()
@@ -350,7 +365,6 @@ onBeforeUnmount(() => {
     />
   </div>
 </template>
-
 <style scoped>
 .screen-view {
   width: 100vw;
