@@ -116,7 +116,6 @@ function setWins(team: 1 | 2) {
         <div class="team-label">КОМАНДА 1</div>
         <div class="team-name">{{ scoreboard.team1.name }}</div>
 
-        <div class="match-score-title">РАХУНОК МАТЧУ</div>
         <div class="match-score">{{ setWins(1) }}</div>
 
         <div class="set-history">
@@ -147,7 +146,6 @@ function setWins(team: 1 | 2) {
         <div class="team-label">КОМАНДА 2</div>
         <div class="team-name">{{ scoreboard.team2.name }}</div>
 
-        <div class="match-score-title">РАХУНОК МАТЧУ</div>
         <div class="match-score">{{ setWins(2) }}</div>
 
         <div class="set-history">
@@ -201,8 +199,13 @@ function setWins(team: 1 | 2) {
 
 .basketball-board {
   height: min(78vh, 720px);
-  grid-template-columns: minmax(280px, 1fr) clamp(220px, 18vw, 330px) minmax(280px, 1fr);
-  gap: clamp(18px, 2.8vw, 42px);
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    clamp(270px, 23vw, 360px)
+    minmax(0, 1fr);
+
+  gap: clamp(14px, 2vw, 32px);
 }
 
 .volleyball-board {
@@ -249,12 +252,20 @@ function setWins(team: 1 | 2) {
 
 .team-name {
   width: 100%;
+  min-width: 0;
+
+  font-family: 'Roboto Condensed', sans-serif;
   font-size: clamp(28px, 4vw, 76px);
-  font-weight: 1000;
+  font-weight: 700;
+
   text-transform: uppercase;
   text-align: center;
-  line-height: 0.98;
+
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+
   overflow-wrap: anywhere;
+
   margin-bottom: clamp(14px, 2vw, 26px);
 }
 
@@ -275,20 +286,35 @@ function setWins(team: 1 | 2) {
 }
 
 .team-score {
+  font-family: 'Roboto', sans-serif;
+
   font-size: clamp(96px, 12vw, 220px);
-  font-weight: 1000;
-  line-height: 0.88;
-  letter-spacing: 3px;
+  font-weight: 900;
+
+  line-height: 0.95;
+  letter-spacing: 1px;
+
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .current-score {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: clamp(8px, 1.6vw, 22px);
-  font-size: clamp(90px, 12vw, 220px);
-  font-weight: 1000;
-  line-height: 0.82;
+
+  width: 100%;
+  min-width: 0;
+
+  gap: clamp(4px, 1vw, 16px);
+
+  font-family: 'Roboto', sans-serif;
+  font-size: clamp(72px, 10vw, 180px);
+  font-weight: 900;
+
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .score-divider {
@@ -298,19 +324,39 @@ function setWins(team: 1 | 2) {
 }
 
 .period {
-  font-size: clamp(26px, 3.5vw, 56px);
-  font-weight: 1000;
+  width: 100%;
+  min-width: 0;
+
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: clamp(22px, 2.4vw, 38px);
+  font-weight: 700;
+
   color: #e2e8f0;
+
   text-align: center;
+  white-space: nowrap;
+
+  line-height: 1.15;
+  letter-spacing: 0.01em;
 }
 
 .clock {
-  font-size: clamp(44px, 6vw, 94px);
-  font-weight: 1000;
-  line-height: 1;
+  width: 100%;
+  min-width: 0;
+
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: clamp(36px, 4.2vw, 72px);
+  font-weight: 500;
+
+  line-height: 1.1;
+  letter-spacing: 0;
+
   margin: clamp(10px, 1.8vw, 18px) 0;
-  letter-spacing: 2px;
+
   text-align: center;
+  white-space: nowrap;
+
+  font-variant-numeric: tabular-nums;
 }
 
 .status,
@@ -434,5 +480,46 @@ function setWins(team: 1 | 2) {
     overflow: auto;
     align-items: flex-start;
   }
+}
+/* Basketball */
+
+.basketball-center .period {
+  font-size: clamp(22px, 2.3vw, 38px);
+}
+
+.basketball-center .clock {
+  font-size: clamp(38px, 4vw, 68px);
+}
+
+.basketball-center .shot-clock-box strong {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Volleyball */
+
+.current-set-card .period {
+  font-size: clamp(22px, 2.5vw, 40px);
+}
+
+.current-set-card .clock {
+  font-size: clamp(38px, 4vw, 68px);
+}
+
+.volley-team .match-score {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.team-label,
+.team-meta,
+.volley-meta,
+.match-summary,
+.status,
+.set-cell {
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 500;
 }
 </style>
