@@ -251,14 +251,16 @@ function setWins(team: 1 | 2) {
   min-width: 0;
 
   font-family: 'Roboto Condensed', sans-serif;
-  font-size: clamp(28px, 4vw, 76px);
+  font-size: clamp(36px, 4.8vw, 92px);
   font-weight: 700;
 
   text-transform: uppercase;
   text-align: center;
 
-  line-height: 1.05;
-  letter-spacing: 0.02em;
+  line-height: 1;
+  letter-spacing: 0.015em;
+
+  -webkit-text-stroke: 1.5px currentColor;
 
   overflow-wrap: anywhere;
 
@@ -284,14 +286,19 @@ function setWins(team: 1 | 2) {
 .team-score {
   font-family: 'Roboto', sans-serif;
 
-  font-size: clamp(96px, 12vw, 220px);
+  font-size: clamp(110px, 13vw, 240px);
   font-weight: 900;
 
-  line-height: 0.95;
-  letter-spacing: 1px;
+  line-height: 1;
+  letter-spacing: 0;
 
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+
+  -webkit-text-stroke: 2px currentColor;
+
+  transform: scaleY(1.12);
+  transform-origin: center;
 }
 
 .current-score {
@@ -302,15 +309,21 @@ function setWins(team: 1 | 2) {
   width: 100%;
   min-width: 0;
 
-  gap: clamp(4px, 1vw, 16px);
+  gap: clamp(4px, 0.8vw, 12px);
 
   font-family: 'Roboto', sans-serif;
-  font-size: clamp(72px, 10vw, 180px);
+  font-size: clamp(90px, 11.5vw, 210px);
   font-weight: 900;
 
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+
+  -webkit-text-stroke: 2px currentColor;
+}
+.current-score {
+  transform: scaleY(1.12);
+  transform-origin: center;
 }
 
 .score-divider {
@@ -341,18 +354,22 @@ function setWins(team: 1 | 2) {
   min-width: 0;
 
   font-family: 'Roboto Condensed', sans-serif;
-  font-size: clamp(36px, 4.2vw, 72px);
-  font-weight: 500;
+  font-size: clamp(42px, 4.5vw, 78px);
+  font-weight: 700;
+
+  color: #ff2020;
 
   line-height: 1.1;
-  letter-spacing: 0;
+  letter-spacing: 0.01em;
 
-  margin: clamp(10px, 1.8vw, 18px) 0;
+  margin: clamp(12px, 1.8vw, 20px) 0;
 
   text-align: center;
   white-space: nowrap;
 
   font-variant-numeric: tabular-nums;
+
+  text-shadow: 0 0 12px rgba(255, 32, 32, 0.3);
 }
 
 .status,
@@ -483,9 +500,6 @@ function setWins(team: 1 | 2) {
   font-size: clamp(22px, 2.3vw, 38px);
 }
 
-.basketball-center .clock {
-  font-size: clamp(38px, 4vw, 68px);
-}
 
 .basketball-center .shot-clock-box strong {
   font-family: 'Roboto', sans-serif;
@@ -499,8 +513,11 @@ function setWins(team: 1 | 2) {
   font-size: clamp(22px, 2.5vw, 40px);
 }
 
-.current-set-card .clock {
-  font-size: clamp(38px, 4vw, 68px);
+.current-set-card .clock,
+.basketball-center .clock {
+  font-size: clamp(42px, 4.5vw, 78px);
+  font-weight: 700;
+  color: #ff2020;
 }
 
 .volley-team .match-score {
