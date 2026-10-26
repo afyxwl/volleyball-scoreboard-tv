@@ -116,8 +116,6 @@ function setWins(team: 1 | 2) {
         <div class="team-label">КОМАНДА 1</div>
         <div class="team-name">{{ scoreboard.team1.name }}</div>
 
-        <div class="match-score">{{ setWins(1) }}</div>
-
         <div class="set-history">
           <div v-for="index in 4" :key="`t1-${index}`" class="set-cell">
             <span>Партія {{ index }}</span>
@@ -145,8 +143,6 @@ function setWins(team: 1 | 2) {
       <section class="volley-team right-team">
         <div class="team-label">КОМАНДА 2</div>
         <div class="team-name">{{ scoreboard.team2.name }}</div>
-
-        <div class="match-score">{{ setWins(2) }}</div>
 
         <div class="set-history">
           <div v-for="index in 4" :key="`t2-${index}`" class="set-cell">
