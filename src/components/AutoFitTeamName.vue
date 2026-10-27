@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  watch,
+} from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -18,6 +25,10 @@ const textElement = ref<HTMLElement | null>(null)
 
 const fontSize = ref(props.maxFontSize)
 
+const isSingleWord = computed(() => {
+  return !/\s/.test(props.name.trim())
+})
+
 let observer: ResizeObserver | null = null
 
 function fitText() {
@@ -26,26 +37,26 @@ function fitText() {
 
   if (!box || !text) return
 
-  const name = props.name.trim()
-  const isSingleWord = !/\s/.test(name)
-
-  text.style.whiteSpace = isSingleWord ? 'nowrap' : 'normal'
-
-  text.style.overflowWrap = 'normal'
-  text.style.wordBreak = 'normal'
-
-  let size = props.maxFontSize
-
-  text.style.fontSize = `${size}px`
-
   const availableWidth = box.clientWidth
 
   if (availableWidth <= 0) return
 
+  // Починаємо з максимального розміру.
+  let size = props.maxFontSize
+
+  text.style.fontSize = `${size}px`
+  text.style.whiteSpace = isSingleWord.value ? 'nowrap' : 'normal'
+
+  // Забороняємо переносити частини одного слова.
+  text.style.wordBreak = 'normal'
+  text.style.overflowWrap = 'normal'
+  text.style.hyphens = 'none'
+
+  // Перевіряємо тільки ширину тексту.
+  // Не використовуємо scrollHeight/clientHeight.
   while (
     size > props.minFontSize &&
-    (text.scrollWidth > availableWidth ||
-      (isSingleWord && text.scrollHeight > text.clientHeight))
+    text.scrollWidth > availableWidth
   ) {
     size -= 1
     text.style.fontSize = `${size}px`
@@ -60,7 +71,7 @@ async function updateSize() {
 }
 
 watch(
-  () => props.name,
+  () => [props.name, props.maxFontSize, props.minFontSize],
   updateSize
 )
 
@@ -68,7 +79,10 @@ onMounted(async () => {
   await updateSize()
 
   if (container.value) {
-    observer = new ResizeObserver(updateSize)
+    observer = new ResizeObserver(() => {
+      updateSize()
+    })
+
     observer.observe(container.value)
   }
 
@@ -87,6 +101,7 @@ onBeforeUnmount(() => {
     <div
       ref="textElement"
       class="team-name-text"
+      :class="{ 'single-word': isSingleWord }"
       :style="{ fontSize: `${fontSize}px` }"
     >
       {{ name }}
@@ -118,5 +133,9 @@ onBeforeUnmount(() => {
   overflow-wrap: normal;
   word-break: normal;
   hyphens: none;
+}
+
+.team-name-text.single-word {
+  white-space: nowrap;
 }
 </style>
