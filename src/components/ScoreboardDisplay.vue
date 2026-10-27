@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import AutoFitTeamName from './AutoFitTeamName.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -58,7 +59,11 @@ function setWins(team: 1 | 2) {
   return own.reduce((total: number, value: number, index: number) => {
     const opponent = other[index]
 
-    if (typeof value === 'number' && typeof opponent === 'number' && value !== opponent) {
+    if (
+      typeof value === 'number' &&
+      typeof opponent === 'number' &&
+      value !== opponent
+    ) {
       return total + (value > opponent ? 1 : 0)
     }
 
@@ -66,6 +71,7 @@ function setWins(team: 1 | 2) {
   }, 0)
 }
 </script>
+
 <template>
   <div
     class="screen-display"
@@ -75,11 +81,22 @@ function setWins(team: 1 | 2) {
     ]"
     :style="themeVars"
   >
+    <!-- БАСКЕТБОЛ -->
     <div v-if="sportType === 'basketball'" class="basketball-board">
       <section class="team-card left-team">
         <div class="team-label">ГОСПОДАРІ</div>
-        <div class="team-name">{{ scoreboard.team1.name }}</div>
-        <div class="team-score">{{ scoreboard.team1.score }}</div>
+
+        <div class="team-name">
+          <AutoFitTeamName
+            :name="scoreboard.team1.name"
+            :max-font-size="preview ? 28 : 92"
+            :min-font-size="preview ? 10 : 18"
+          />
+        </div>
+
+        <div class="team-score">
+          {{ scoreboard.team1.score }}
+        </div>
 
         <div class="team-meta">
           <span>Таймаути: {{ scoreboard.team1.timeoutsUsed }}</span>
@@ -88,21 +105,38 @@ function setWins(team: 1 | 2) {
       </section>
 
       <section class="center-card basketball-center">
-        <div class="period">ПЕРІОД {{ scoreboard.currentSet }}</div>
-        <div class="clock">{{ displayedClock }}</div>
+        <div class="period">
+          ПЕРІОД {{ scoreboard.currentSet }}
+        </div>
+
+        <div class="clock">
+          {{ displayedClock }}
+        </div>
 
         <div class="shot-clock-box">
           <span>АТАКА</span>
           <strong>{{ displayedShotClock }}</strong>
         </div>
 
-        <div class="status">{{ mapStatus(scoreboard.status) }}</div>
+        <div class="status">
+          {{ mapStatus(scoreboard.status) }}
+        </div>
       </section>
 
       <section class="team-card right-team">
         <div class="team-label">ГОСТІ</div>
-        <div class="team-name">{{ scoreboard.team2.name }}</div>
-        <div class="team-score">{{ scoreboard.team2.score }}</div>
+
+        <div class="team-name">
+          <AutoFitTeamName
+            :name="scoreboard.team2.name"
+            :max-font-size="preview ? 28 : 92"
+            :min-font-size="preview ? 10 : 18"
+          />
+        </div>
+
+        <div class="team-score">
+          {{ scoreboard.team2.score }}
+        </div>
 
         <div class="team-meta">
           <span>Таймаути: {{ scoreboard.team2.timeoutsUsed }}</span>
@@ -111,51 +145,95 @@ function setWins(team: 1 | 2) {
       </section>
     </div>
 
+    <!-- ВОЛЕЙБОЛ -->
     <div v-else class="volleyball-board">
       <section class="volley-team left-team">
         <div class="team-label">КОМАНДА 1</div>
-        <div class="team-name">{{ scoreboard.team1.name }}</div>
+
+        <div class="team-name">
+          <AutoFitTeamName
+            :name="scoreboard.team1.name"
+            :max-font-size="preview ? 28 : 92"
+            :min-font-size="preview ? 10 : 18"
+          />
+        </div>
 
         <div class="set-history">
-          <div v-for="index in 4" :key="`t1-${index}`" class="set-cell">
+          <div
+            v-for="index in 4"
+            :key="`t1-${index}`"
+            class="set-cell"
+          >
             <span>Партія {{ index }}</span>
             <strong>{{ setScore(1, index - 1) }}</strong>
           </div>
         </div>
 
-        <div class="volley-meta">Таймаути: {{ scoreboard.team1.timeoutsUsed }}</div>
+        <div class="volley-meta">
+          Таймаути: {{ scoreboard.team1.timeoutsUsed }}
+        </div>
       </section>
 
       <section class="center-card current-set-card">
-        <div class="period">СЕТ {{ scoreboard.currentSet }}</div>
-
-        <div class="current-score">
-          <span class="current-score-left">{{ scoreboard.team1.score }}</span>
-          <span class="score-divider">:</span>
-          <span class="current-score-right">{{ scoreboard.team2.score }}</span>
+        <div class="period">
+          СЕТ {{ scoreboard.currentSet }}
         </div>
 
-        <div class="clock">{{ displayedClock }}</div>
-        <div class="match-summary">Матч {{ setWins(1) }} : {{ setWins(2) }}</div>
-        <div class="status">{{ mapStatus(scoreboard.status) }}</div>
+        <div class="current-score">
+          <span class="current-score-left">
+            {{ scoreboard.team1.score }}
+          </span>
+
+          <span class="score-divider">:</span>
+
+          <span class="current-score-right">
+            {{ scoreboard.team2.score }}
+          </span>
+        </div>
+
+        <div class="clock">
+          {{ displayedClock }}
+        </div>
+
+        <div class="match-summary">
+          Матч {{ setWins(1) }} : {{ setWins(2) }}
+        </div>
+
+        <div class="status">
+          {{ mapStatus(scoreboard.status) }}
+        </div>
       </section>
 
       <section class="volley-team right-team">
         <div class="team-label">КОМАНДА 2</div>
-        <div class="team-name">{{ scoreboard.team2.name }}</div>
+
+        <div class="team-name">
+          <AutoFitTeamName
+            :name="scoreboard.team2.name"
+            :max-font-size="preview ? 28 : 92"
+            :min-font-size="preview ? 10 : 18"
+          />
+        </div>
 
         <div class="set-history">
-          <div v-for="index in 4" :key="`t2-${index}`" class="set-cell">
+          <div
+            v-for="index in 4"
+            :key="`t2-${index}`"
+            class="set-cell"
+          >
             <span>Партія {{ index }}</span>
             <strong>{{ setScore(2, index - 1) }}</strong>
           </div>
         </div>
 
-        <div class="volley-meta">Таймаути: {{ scoreboard.team2.timeoutsUsed }}</div>
+        <div class="volley-meta">
+          Таймаути: {{ scoreboard.team2.timeoutsUsed }}
+        </div>
       </section>
     </div>
   </div>
 </template>
+
 <style scoped>
 .screen-display {
   width: 100vw;
@@ -165,8 +243,16 @@ function setWins(team: 1 | 2) {
   padding: clamp(16px, 2.2vw, 38px);
   overflow: hidden;
   background:
-    radial-gradient(circle at 25% 20%, color-mix(in srgb, var(--team1-color) 22%, transparent), transparent 30%),
-    radial-gradient(circle at 80% 25%, color-mix(in srgb, var(--team2-color) 22%, transparent), transparent 30%),
+    radial-gradient(
+      circle at 25% 20%,
+      color-mix(in srgb, var(--team1-color) 22%, transparent),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 25%,
+      color-mix(in srgb, var(--team2-color) 22%, transparent),
+      transparent 30%
+    ),
     #03050a;
   color: #f8fafc;
   font-family: var(--board-font);
@@ -195,18 +281,19 @@ function setWins(team: 1 | 2) {
 
 .basketball-board {
   height: min(78vh, 720px);
-
   grid-template-columns:
     minmax(0, 1fr)
     clamp(270px, 23vw, 360px)
     minmax(0, 1fr);
-
   gap: clamp(14px, 2vw, 32px);
 }
 
 .volleyball-board {
   height: min(84vh, 820px);
-  grid-template-columns: minmax(300px, 0.95fr) minmax(360px, 1.1fr) minmax(300px, 0.95fr);
+  grid-template-columns:
+    minmax(300px, 0.95fr)
+    minmax(360px, 1.1fr)
+    minmax(300px, 0.95fr);
   gap: clamp(16px, 2vw, 34px);
 }
 
@@ -230,12 +317,14 @@ function setWins(team: 1 | 2) {
 
 .left-team {
   border: 3px solid var(--team1-color);
-  box-shadow: 0 0 38px color-mix(in srgb, var(--team1-color) 26%, transparent);
+  box-shadow:
+    0 0 38px color-mix(in srgb, var(--team1-color) 26%, transparent);
 }
 
 .right-team {
   border: 3px solid var(--team2-color);
-  box-shadow: 0 0 38px color-mix(in srgb, var(--team2-color) 26%, transparent);
+  box-shadow:
+    0 0 38px color-mix(in srgb, var(--team2-color) 26%, transparent);
 }
 
 .team-label {
@@ -246,24 +335,13 @@ function setWins(team: 1 | 2) {
   text-align: center;
 }
 
+/* Назва команди: розмір підбирає AutoFitTeamName */
 .team-name {
   width: 100%;
   min-width: 0;
-
-  font-family: 'Roboto Condensed', sans-serif;
-  font-size: clamp(36px, 4.8vw, 92px);
-  font-weight: 700;
-
-  text-transform: uppercase;
-  text-align: center;
-
-  line-height: 1;
-  letter-spacing: 0.015em;
-
-  -webkit-text-stroke: 1.5px currentColor;
-
-  overflow-wrap: anywhere;
-
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: clamp(14px, 2vw, 26px);
 }
 
@@ -272,7 +350,8 @@ function setWins(team: 1 | 2) {
 .left-team .match-score,
 .current-score-left {
   color: var(--team1-color);
-  text-shadow: 0 0 22px color-mix(in srgb, var(--team1-color) 48%, transparent);
+  text-shadow:
+    0 0 22px color-mix(in srgb, var(--team1-color) 48%, transparent);
 }
 
 .right-team .team-name,
@@ -280,23 +359,19 @@ function setWins(team: 1 | 2) {
 .right-team .match-score,
 .current-score-right {
   color: var(--team2-color);
-  text-shadow: 0 0 22px color-mix(in srgb, var(--team2-color) 48%, transparent);
+  text-shadow:
+    0 0 22px color-mix(in srgb, var(--team2-color) 48%, transparent);
 }
 
 .team-score {
   font-family: 'Roboto', sans-serif;
-
   font-size: clamp(110px, 13vw, 240px);
   font-weight: 900;
-
   line-height: 1;
   letter-spacing: 0;
-
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-
   -webkit-text-stroke: 2px currentColor;
-
   transform: scaleY(1.12);
   transform-origin: center;
 }
@@ -305,23 +380,16 @@ function setWins(team: 1 | 2) {
   display: flex;
   align-items: baseline;
   justify-content: center;
-
   width: 100%;
   min-width: 0;
-
   gap: clamp(4px, 0.8vw, 12px);
-
   font-family: 'Roboto', sans-serif;
   font-size: clamp(90px, 11.5vw, 210px);
   font-weight: 900;
-
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-
   -webkit-text-stroke: 2px currentColor;
-}
-.current-score {
   transform: scaleY(1.12);
   transform-origin: center;
 }
@@ -335,16 +403,12 @@ function setWins(team: 1 | 2) {
 .period {
   width: 100%;
   min-width: 0;
-
   font-family: 'Roboto Condensed', sans-serif;
   font-size: clamp(22px, 2.4vw, 38px);
   font-weight: 700;
-
   color: #e2e8f0;
-
   text-align: center;
   white-space: nowrap;
-
   line-height: 1.15;
   letter-spacing: 0.01em;
 }
@@ -352,23 +416,16 @@ function setWins(team: 1 | 2) {
 .clock {
   width: 100%;
   min-width: 0;
-
   font-family: 'Roboto Condensed', sans-serif;
   font-size: clamp(42px, 4.5vw, 78px);
   font-weight: 700;
-
   color: #ff2020;
-
   line-height: 1.1;
   letter-spacing: 0.01em;
-
   margin: clamp(12px, 1.8vw, 20px) 0;
-
   text-align: center;
   white-space: nowrap;
-
   font-variant-numeric: tabular-nums;
-
   text-shadow: 0 0 12px rgba(255, 32, 32, 0.3);
 }
 
@@ -425,7 +482,9 @@ function setWins(team: 1 | 2) {
 
 .shot-clock-box {
   min-width: clamp(90px, 8vw, 140px);
-  padding: clamp(8px, 1.2vw, 14px) clamp(12px, 1.8vw, 20px);
+  padding:
+    clamp(8px, 1.2vw, 14px)
+    clamp(12px, 1.8vw, 20px);
   border-radius: 20px;
   border: 2px solid rgba(250, 204, 21, 0.8);
   background: rgba(250, 204, 21, 0.09);
@@ -460,9 +519,7 @@ function setWins(team: 1 | 2) {
   padding: 10px;
 }
 
-.is-preview .team-name {
-  font-size: clamp(16px, 2.1vw, 28px);
-}
+/* Розмір назви у прев'ю задається через props AutoFitTeamName */
 
 .is-preview .team-score,
 .is-preview .current-score {
@@ -494,12 +551,12 @@ function setWins(team: 1 | 2) {
     align-items: flex-start;
   }
 }
+
 /* Basketball */
 
 .basketball-center .period {
   font-size: clamp(22px, 2.3vw, 38px);
 }
-
 
 .basketball-center .shot-clock-box strong {
   font-family: 'Roboto', sans-serif;
