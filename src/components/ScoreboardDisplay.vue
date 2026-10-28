@@ -148,7 +148,7 @@ function setWins(team: 1 | 2) {
     <!-- ВОЛЕЙБОЛ -->
     <div v-else class="volleyball-board">
       <section class="volley-team left-team">
-        <div class="team-label">КОМАНДА 1</div>
+
 
         <div class="team-name">
           <AutoFitTeamName
@@ -169,9 +169,24 @@ function setWins(team: 1 | 2) {
           </div>
         </div>
 
-        <div class="volley-meta">
-          Таймаути: {{ scoreboard.team1.timeoutsUsed }}
+        <div class="timeout-section">
+        <div class="timeout-title">ТАЙМАУТИ</div>
+
+        <div class="timeout-squares">
+          <div
+            v-for="index in 2"
+            :key="`team1-timeout-${index}`"
+            class="timeout-square"
+            :class="{
+              used: index <= Number(scoreboard.team1.timeoutsUsed ?? 0)
+            }"
+          >
+            <span v-if="index <= Number(scoreboard.team1.timeoutsUsed ?? 0)">
+              ×
+            </span>
+          </div>
         </div>
+      </div>
       </section>
 
       <section class="center-card current-set-card">
@@ -205,7 +220,7 @@ function setWins(team: 1 | 2) {
       </section>
 
       <section class="volley-team right-team">
-        <div class="team-label">КОМАНДА 2</div>
+    
 
         <div class="team-name">
           <AutoFitTeamName
@@ -226,9 +241,24 @@ function setWins(team: 1 | 2) {
           </div>
         </div>
 
-        <div class="volley-meta">
-          Таймаути: {{ scoreboard.team2.timeoutsUsed }}
+        <div class="timeout-section">
+        <div class="timeout-title">ТАЙМАУТИ</div>
+
+        <div class="timeout-squares">
+          <div
+            v-for="index in 2"
+            :key="`team2-timeout-${index}`"
+            class="timeout-square"
+            :class="{
+              used: index <= Number(scoreboard.team2.timeoutsUsed ?? 0)
+            }"
+          >
+            <span v-if="index <= Number(scoreboard.team2.timeoutsUsed ?? 0)">
+              ×
+            </span>
+          </div>
         </div>
+      </div>
       </section>
     </div>
   </div>
@@ -335,7 +365,7 @@ function setWins(team: 1 | 2) {
   text-align: center;
 }
 
-/* Назва команди: розмір підбирає AutoFitTeamName */
+
 .team-name {
   width: 100%;
   min-width: 0;
@@ -519,7 +549,7 @@ function setWins(team: 1 | 2) {
   padding: 10px;
 }
 
-/* Розмір назви у прев'ю задається через props AutoFitTeamName */
+
 
 .is-preview .team-score,
 .is-preview .current-score {
@@ -552,7 +582,6 @@ function setWins(team: 1 | 2) {
   }
 }
 
-/* Basketball */
 
 .basketball-center .period {
   font-size: clamp(22px, 2.3vw, 38px);
@@ -563,8 +592,6 @@ function setWins(team: 1 | 2) {
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
-
-/* Volleyball */
 
 .current-set-card .period {
   font-size: clamp(22px, 2.5vw, 40px);
@@ -592,4 +619,86 @@ function setWins(team: 1 | 2) {
   font-family: 'Roboto Condensed', sans-serif;
   font-weight: 500;
 }
+
+
+.timeout-section {
+  width: 100%;
+  margin-top: clamp(14px, 2vw, 26px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+}
+
+.timeout-title {
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: clamp(18px, 1.8vw, 28px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #e2e8f0;
+  text-align: center;
+}
+
+.timeout-squares {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(12px, 1.4vw, 22px);
+}
+
+.timeout-square {
+  width: clamp(42px, 4vw, 62px);
+  height: clamp(42px, 4vw, 62px);
+
+  box-sizing: border-box;
+  border: 2px solid #64748b;
+  border-radius: 8px;
+
+  background: rgba(15, 23, 42, 0.7);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.timeout-square.used {
+  background: #dc2626;
+  border-color: #ef4444;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.4);
+}
+
+.timeout-square.used span {
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-size: clamp(32px, 3vw, 48px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+
+.is-preview .timeout-section {
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.is-preview .timeout-title {
+  font-size: clamp(12px, 1.4vw, 18px);
+}
+
+.is-preview .timeout-square {
+  width: clamp(22px, 2.5vw, 36px);
+  height: clamp(22px, 2.5vw, 36px);
+}
+
+.is-preview .timeout-square.used span {
+  font-size: clamp(18px, 2vw, 28px);
+}
+
 </style>
